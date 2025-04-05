@@ -1,5 +1,5 @@
 {
-  "name": "smart-study-planner",
+  "name": "study-planner",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,26 +9,20 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@fullcalendar/daygrid": "^6.1.17",
-    "@fullcalendar/interaction": "^6.1.17",
-    "@fullcalendar/react": "^6.1.17",
-    "@fullcalendar/timegrid": "^6.1.17",
-    "@types/node": "20.11.5",
-    "@types/react": "18.2.48",
-    "@types/react-dom": "18.2.18",
-    "bcryptjs": "^2.4.3",
-    "date-fns": "^2.30.0",
     "next": "14.1.0",
-    "next-auth": "^4.24.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "sequelize": "^6.35.2",
-    "sqlite3": "^5.1.7",
+    "next-auth": "4.24.5",
+    "tailwindcss": "3.4.1",
+    "autoprefixer": "10.4.17",
+    "postcss": "8.4.35",
     "typescript": "5.3.3"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
-    "eslint": "8.56.0",
+    "@types/node": "20.11.5",
+    "@types/react": "18.2.48",
+    "@types/react-dom": "18.2.18",
+    "eslint": "8.57.0",
     "eslint-config-next": "14.1.0"
   }
 }
