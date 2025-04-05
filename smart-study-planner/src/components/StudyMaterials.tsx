@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 interface StudyMaterial {
   id: number;
@@ -38,11 +38,7 @@ const StudyMaterials: React.FC<StudyMaterialsProps> = ({ studyPlanId }) => {
     content: '',
   });
 
-  useEffect(() => {
-    fetchMaterials();
-  }, [studyPlanId]);
-
-  const fetchMaterials = async () => {
+  const fetchMaterials = useCallback(async () => {
     try {
       const response = await fetch(`/api/study-materials?studyPlanId=${studyPlanId}`);
       if (!response.ok) throw new Error('Failed to fetch materials');
@@ -53,7 +49,11 @@ const StudyMaterials: React.FC<StudyMaterialsProps> = ({ studyPlanId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [studyPlanId]);
+
+  useEffect(() => {
+    fetchMaterials();
+  }, [fetchMaterials]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

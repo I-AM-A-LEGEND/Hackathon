@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '../../components/Layout';
 import ProtectedRoute from '../../components/ProtectedRoute';
@@ -30,13 +30,7 @@ const StudyPlanDetail: React.FC = () => {
     status: 'active' as const,
   });
 
-  useEffect(() => {
-    if (id) {
-      fetchStudyPlan();
-    }
-  }, [id]);
-
-  const fetchStudyPlan = async () => {
+  const fetchStudyPlan = useCallback(async () => {
     try {
       const response = await fetch(`/api/study-plans/${id}`);
       if (!response.ok) throw new Error('Failed to fetch study plan');
@@ -54,7 +48,13 @@ const StudyPlanDetail: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      fetchStudyPlan();
+    }
+  }, [id, fetchStudyPlan]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

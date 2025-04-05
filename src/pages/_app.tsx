@@ -1,15 +1,17 @@
-import React from 'react'
-import type { AppProps } from 'next/app'
-import { SessionProvider } from 'next-auth/react'
-import Navbar from '../components/Navbar'
+import type { AppProps } from 'next/app';
+import { SessionProvider } from 'next-auth/react';
+import { AuthProvider } from '@/contexts/AuthContext';
+import Layout from '@/components/Layout';
+import '@/styles/globals.css';
 
-function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
+export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   return (
     <SessionProvider session={session}>
-      <Navbar />
-      <Component {...pageProps} />
+      <AuthProvider>
+        <Layout>
+          <Component {...pageProps} />
+        </Layout>
+      </AuthProvider>
     </SessionProvider>
-  )
-}
-
-export default MyApp 
+  );
+} 

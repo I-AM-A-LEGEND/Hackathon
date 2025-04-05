@@ -1,137 +1,186 @@
 import React, { useState } from 'react';
+import Layout from '../components/Layout';
+import ProtectedRoute from '../components/ProtectedRoute';
+import { useAuth } from '../contexts/AuthContext';
+import { useRouter } from 'next/router';
 
 const Settings: React.FC = () => {
-  const [settings, setSettings] = useState({
-    notifications: true,
-    emailReminders: true,
-    studyReminders: true,
-    darkMode: false,
-    studyDuration: 45, // minutes
-    breakDuration: 15, // minutes
-  });
+  const { user } = useAuth();
+  const [name, setName] = useState(user?.name || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
+  const router = useRouter();
 
-  const handleToggle = (setting: keyof typeof settings) => {
-    setSettings(prev => ({
-      ...prev,
-      [setting]: !prev[setting]
-    }));
+  const handleProfileUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      // Here you would typically call your API to update the user profile
+      // const response = await fetch('/api/users/profile', {
+      //   method: 'PUT',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ name, email }),
+      // });
+      
+      // For now, just show a success message
+      setNotification({
+        type: 'success',
+        message: 'Profile updated successfully!'
+      });
+      
+      setTimeout(() => {
+        setNotification(null);
+      }, 3000);
+    } catch (error) {
+      setNotification({
+        type: 'error',
+        message: 'Failed to update profile'
+      });
+    }
   };
 
-  const handleDurationChange = (setting: 'studyDuration' | 'breakDuration', value: string) => {
-    const numValue = parseInt(value);
-    if (!isNaN(numValue) && numValue > 0) {
-      setSettings(prev => ({
-        ...prev,
-        [setting]: numValue
-      }));
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (password !== confirmPassword) {
+      setNotification({
+        type: 'error',
+        message: 'Passwords do not match'
+      });
+      return;
+    }
+    
+    try {
+      // Here you would typically call your API to change the password
+      // const response = await fetch('/api/users/password', {
+      //   method: 'PUT',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ password }),
+      // });
+      
+      // For now, just show a success message
+      setNotification({
+        type: 'success',
+        message: 'Password changed successfully!'
+      });
+      
+      setPassword('');
+      setConfirmPassword('');
+      
+      setTimeout(() => {
+        setNotification(null);
+      }, 3000);
+    } catch (error) {
+      setNotification({
+        type: 'error',
+        message: 'Failed to change password'
+      });
+    }
+  };
+
+  const navigateTo = (path: string) => {
+    if (path === '/login' || path === '/register') {
+      // Let NextAuth handle these navigations
+      console.log('Navigation to auth pages handled by NextAuth');
+      window.location.href = path; // Force hard navigation instead of client routing
+      return;
+    }
+    
+    try {
+      router.push(path);
+    } catch (error) {
+      console.error('Navigation error:', error);
     }
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Settings</h1>
-      
-      <div className="bg-white rounded-lg shadow-md p-6 space-y-6">
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Notification Settings</h2>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-700">Enable Notifications</span>
-              <button
-                onClick={() => handleToggle('notifications')}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full ${
-                  settings.notifications ? 'bg-blue-600' : 'bg-gray-200'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-                    settings.notifications ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
+    <ProtectedRoute>
+      <Layout>
+        <div className="container mx-auto px-4 py-8">
+          <h1 className="text-3xl font-bold mb-8">Settings</h1>
+          
+          {notification && (
+            <div className={`mb-4 p-4 rounded ${notification.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+              {notification.message}
             </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-gray-700">Email Reminders</span>
-              <button
-                onClick={() => handleToggle('emailReminders')}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full ${
-                  settings.emailReminders ? 'bg-blue-600' : 'bg-gray-200'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-                    settings.emailReminders ? 'translate-x-6' : 'translate-x-1'
-                  }`}
+          )}
+          
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 className="text-xl font-semibold mb-4">Profile Settings</h2>
+            <form onSubmit={handleProfileUpdate}>
+              <div className="mb-4">
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
-              </button>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-gray-700">Study Session Reminders</span>
-              <button
-                onClick={() => handleToggle('studyReminders')}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full ${
-                  settings.studyReminders ? 'bg-blue-600' : 'bg-gray-200'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-                    settings.studyReminders ? 'translate-x-6' : 'translate-x-1'
-                  }`}
+              </div>
+              <div className="mb-4">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 />
+              </div>
+              <button
+                type="submit"
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                Update Profile
               </button>
-            </div>
+            </form>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold mb-4">Change Password</h2>
+            <form onSubmit={handlePasswordChange}>
+              <div className="mb-4">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                  New Password
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                  Confirm New Password
+                </label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <button
+                type="submit"
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                Change Password
+              </button>
+            </form>
           </div>
         </div>
-
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Study Preferences</h2>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-700">Study Duration (minutes)</span>
-              <input
-                type="number"
-                value={settings.studyDuration}
-                onChange={(e) => handleDurationChange('studyDuration', e.target.value)}
-                className="w-20 px-3 py-2 border border-gray-300 rounded-md"
-                min="1"
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-gray-700">Break Duration (minutes)</span>
-              <input
-                type="number"
-                value={settings.breakDuration}
-                onChange={(e) => handleDurationChange('breakDuration', e.target.value)}
-                className="w-20 px-3 py-2 border border-gray-300 rounded-md"
-                min="1"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Appearance</h2>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-700">Dark Mode</span>
-            <button
-              onClick={() => handleToggle('darkMode')}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full ${
-                settings.darkMode ? 'bg-blue-600' : 'bg-gray-200'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
-                  settings.darkMode ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+      </Layout>
+    </ProtectedRoute>
   );
 };
 

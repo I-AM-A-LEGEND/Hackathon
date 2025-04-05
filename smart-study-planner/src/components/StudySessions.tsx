@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 
 interface StudySession {
@@ -27,11 +27,7 @@ const StudySessions: React.FC<StudySessionsProps> = ({ studyPlanId }) => {
     endTime: '',
   });
 
-  useEffect(() => {
-    fetchSessions();
-  }, [studyPlanId]);
-
-  const fetchSessions = async () => {
+  const fetchSessions = useCallback(async () => {
     try {
       const response = await fetch(`/api/study-sessions?studyPlanId=${studyPlanId}`);
       if (!response.ok) throw new Error('Failed to fetch sessions');
@@ -42,7 +38,11 @@ const StudySessions: React.FC<StudySessionsProps> = ({ studyPlanId }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [studyPlanId]);
+
+  useEffect(() => {
+    fetchSessions();
+  }, [fetchSessions]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

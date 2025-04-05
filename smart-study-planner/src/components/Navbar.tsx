@@ -1,10 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import { useSession, signOut } from 'next-auth/react';
 
 const Navbar: React.FC = () => {
-  const router = useRouter();
   const { data: session } = useSession();
 
   return (
@@ -20,13 +18,13 @@ const Navbar: React.FC = () => {
           <div className="flex items-center">
             {session ? (
               <>
-                <Link href="/Dashboard" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                <Link href="/dashboard" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
                   Dashboard
                 </Link>
-                <Link href="/StudyPlan" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                <Link href="/study-plan" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
                   Study Plan
                 </Link>
-                <Link href="/Settings" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                <Link href="/settings" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
                   Settings
                 </Link>
                 <button
@@ -38,10 +36,10 @@ const Navbar: React.FC = () => {
               </>
             ) : (
               <>
-                <Link href="/Login" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                <Link href="/login" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
                   Login
                 </Link>
-                <Link href="/Register" className="ml-4 px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                <Link href="/register" className="ml-4 px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
                   Register
                 </Link>
               </>

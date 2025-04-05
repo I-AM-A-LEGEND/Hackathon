@@ -2,8 +2,9 @@ import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { compare } from 'bcryptjs';
 import User from '../../../database/models/User';
+import type { AuthOptions } from 'next-auth';
 
-export default NextAuth({
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -16,21 +17,26 @@ export default NextAuth({
           throw new Error('Please enter an email and password');
         }
 
-        const user = await User.findOne({ where: { email: credentials.email } });
-        if (!user) {
-          throw new Error('No user found with this email');
-        }
+        try {
+          const user = await User.findOne({ where: { email: credentials.email } });
+          if (!user) {
+            throw new Error('No user found with this email');
+          }
 
-        const isValid = await compare(credentials.password, user.password);
-        if (!isValid) {
-          throw new Error('Invalid password');
-        }
+          const isValid = await compare(credentials.password, user.password);
+          if (!isValid) {
+            throw new Error('Invalid password');
+          }
 
-        return {
-          id: user.id.toString(),
-          email: user.email,
-          name: user.name,
-        };
+          return {
+            id: user.id.toString(),
+            email: user.email,
+            name: user.name,
+          };
+        } catch (error) {
+          console.error('Authentication error:', error);
+          throw new Error('Authentication failed');
+        }
       }
     })
   ],
@@ -46,8 +52,8 @@ export default NextAuth({
       return token;
     },
     async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id;
+      if (token && session.user) {
+        session.user.id = token.id as string;
       }
       return session;
     }
@@ -56,5 +62,8 @@ export default NextAuth({
     signIn: '/login',
     error: '/login',
   },
+  debug: process.env.NODE_ENV === 'development',
   secret: process.env.NEXTAUTH_SECRET,
-}); 
+};
+
+export default NextAuth(authOptions); 

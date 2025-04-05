@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 interface StudyRecommendation {
   id: number;
@@ -23,11 +23,7 @@ const StudyRecommendations: React.FC<StudyRecommendationsProps> = ({ studyPlanId
     priority: 'medium' as const,
   });
 
-  useEffect(() => {
-    fetchRecommendations();
-  }, [studyPlanId]);
-
-  const fetchRecommendations = async () => {
+  const fetchRecommendations = useCallback(async () => {
     try {
       const response = await fetch(`/api/study-recommendations?studyPlanId=${studyPlanId}`);
       if (!response.ok) throw new Error('Failed to fetch recommendations');
@@ -38,7 +34,11 @@ const StudyRecommendations: React.FC<StudyRecommendationsProps> = ({ studyPlanId
     } finally {
       setLoading(false);
     }
-  };
+  }, [studyPlanId]);
+
+  useEffect(() => {
+    fetchRecommendations();
+  }, [fetchRecommendations]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

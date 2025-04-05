@@ -1,74 +1,101 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from '../config';
+import User from './User';
 import StudyPlan from './StudyPlan';
+import { safeModelInit } from './modelHelper';
 
-class StudySession extends Model {
+interface StudySessionAttributes {
+  id: number;
+  userId: number;
+  studyPlanId: number;
+  title: string;
+  startTime: Date;
+  endTime?: Date;
+  duration?: number;
+  notes?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+class StudySession extends Model<StudySessionAttributes> implements StudySessionAttributes {
   public id!: number;
+  public userId!: number;
   public studyPlanId!: number;
   public title!: string;
-  public description!: string;
   public startTime!: Date;
   public endTime!: Date;
-  public status!: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
-  public progress!: number;
+  public duration!: number;
+  public notes!: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
 
-StudySession.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    studyPlanId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: StudyPlan,
-        key: 'id',
+// Safely initialize the model
+safeModelInit(
+  // Server-side initialization
+  () => {
+    StudySession.init(
+      {
+        id: {
+          type: DataTypes.INTEGER,
+          autoIncrement: true,
+          primaryKey: true,
+        },
+        userId: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          references: {
+            model: User,
+            key: 'id',
+          },
+        },
+        studyPlanId: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          references: {
+            model: StudyPlan,
+            key: 'id',
+          },
+        },
+        title: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+        startTime: {
+          type: DataTypes.DATE,
+          allowNull: false,
+        },
+        endTime: {
+          type: DataTypes.DATE,
+          allowNull: true,
+        },
+        duration: {
+          type: DataTypes.INTEGER, // Duration in minutes
+          allowNull: true,
+        },
+        notes: {
+          type: DataTypes.TEXT,
+          allowNull: true,
+        },
       },
-    },
-    title: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    startTime: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    endTime: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    status: {
-      type: DataTypes.ENUM('scheduled', 'in_progress', 'completed', 'cancelled'),
-      defaultValue: 'scheduled',
-    },
-    progress: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 0,
-      validate: {
-        min: 0,
-        max: 100,
-      },
-    },
+      {
+        sequelize,
+        modelName: 'StudySession',
+        tableName: 'study_sessions',
+      }
+    );
+
+    // Define associations
+    StudySession.belongsTo(User, { foreignKey: 'userId' });
+    User.hasMany(StudySession, { foreignKey: 'userId' });
+    
+    StudySession.belongsTo(StudyPlan, { foreignKey: 'studyPlanId' });
+    StudyPlan.hasMany(StudySession, { foreignKey: 'studyPlanId' });
   },
-  {
-    sequelize,
-    modelName: 'StudySession',
-    tableName: 'study_sessions',
+  // Browser-side placeholder
+  () => {
+    sequelize.define('StudySession', {}, {});
   }
 );
-
-// Define associations
-StudySession.belongsTo(StudyPlan, { foreignKey: 'studyPlanId' });
-StudyPlan.hasMany(StudySession, { foreignKey: 'studyPlanId' });
 
 export default StudySession; 

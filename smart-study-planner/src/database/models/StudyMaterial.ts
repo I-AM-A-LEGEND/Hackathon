@@ -1,59 +1,93 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from '../config';
-import User from './User';
+import StudyPlan from './StudyPlan';
+import { safeModelInit } from './modelHelper';
 
-class StudyMaterial extends Model {
+interface StudyMaterialAttributes {
+  id: number;
+  studyPlanId: number;
+  title: string;
+  description?: string;
+  url?: string;
+  content?: string;
+  type: 'book' | 'article' | 'video' | 'document' | 'note' | 'other';
+  priority: 'low' | 'medium' | 'high';
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+class StudyMaterial extends Model<StudyMaterialAttributes> implements StudyMaterialAttributes {
   public id!: number;
-  public userId!: number;
+  public studyPlanId!: number;
   public title!: string;
   public description!: string;
-  public type!: 'pdf' | 'video' | 'link' | 'note';
   public url!: string;
+  public content!: string;
+  public type!: 'book' | 'article' | 'video' | 'document' | 'note' | 'other';
+  public priority!: 'low' | 'medium' | 'high';
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
 
-StudyMaterial.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: User,
-        key: 'id',
+// Safely initialize the model
+safeModelInit(
+  // Server-side initialization
+  () => {
+    StudyMaterial.init(
+      {
+        id: {
+          type: DataTypes.INTEGER,
+          autoIncrement: true,
+          primaryKey: true,
+        },
+        studyPlanId: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          references: {
+            model: StudyPlan,
+            key: 'id',
+          },
+        },
+        title: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+        description: {
+          type: DataTypes.TEXT,
+          allowNull: true,
+        },
+        url: {
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
+        content: {
+          type: DataTypes.TEXT,
+          allowNull: true,
+        },
+        type: {
+          type: DataTypes.ENUM('book', 'article', 'video', 'document', 'note', 'other'),
+          defaultValue: 'other',
+        },
+        priority: {
+          type: DataTypes.ENUM('low', 'medium', 'high'),
+          defaultValue: 'medium',
+        },
       },
-    },
-    title: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    type: {
-      type: DataTypes.ENUM('pdf', 'video', 'link', 'note'),
-      allowNull: false,
-    },
-    url: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
+      {
+        sequelize,
+        modelName: 'StudyMaterial',
+        tableName: 'study_materials',
+      }
+    );
+
+    // Define associations
+    StudyMaterial.belongsTo(StudyPlan, { foreignKey: 'studyPlanId' });
+    StudyPlan.hasMany(StudyMaterial, { foreignKey: 'studyPlanId' });
   },
-  {
-    sequelize,
-    modelName: 'StudyMaterial',
-    tableName: 'study_materials',
+  // Browser-side placeholder
+  () => {
+    sequelize.define('StudyMaterial', {}, {});
   }
 );
-
-// Define associations
-StudyMaterial.belongsTo(User, { foreignKey: 'userId' });
-User.hasMany(StudyMaterial, { foreignKey: 'userId' });
 
 export default StudyMaterial; 

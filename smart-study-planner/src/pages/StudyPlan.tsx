@@ -3,6 +3,7 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import { DateSelectArg, EventContentArg } from '@fullcalendar/core';
 
 const StudyPlan: React.FC = () => {
   const [events, setEvents] = useState([
@@ -13,7 +14,7 @@ const StudyPlan: React.FC = () => {
     },
   ]);
 
-  const handleDateSelect = (selectInfo: any) => {
+  const handleDateSelect = (selectInfo: DateSelectArg) => {
     const title = prompt('Please enter a title for your study session');
     if (title) {
       setEvents([
@@ -47,7 +48,7 @@ const StudyPlan: React.FC = () => {
           weekends={true}
           events={events}
           select={handleDateSelect}
-          eventContent={(eventInfo) => (
+          eventContent={(eventInfo: EventContentArg) => (
             <div className="p-1">
               <b>{eventInfo.timeText}</b>
               <i>{eventInfo.event.title}</i>

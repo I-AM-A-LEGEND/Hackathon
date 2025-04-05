@@ -1,4 +1,4 @@
-import { Model } from 'sequelize';
+// Database type definitions
 
 declare global {
   namespace NodeJS {
