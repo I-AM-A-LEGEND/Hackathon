@@ -3,30 +3,41 @@ import { getTokenFromRequest, verifyToken } from '../utils/auth';
 import User from '../database/models/User';
 
 export interface AuthenticatedRequest extends NextApiRequest {
-  user?: User;
+  user?: {
+    id: string;
+    email: string;
+  };
 }
 
-export const withAuth = (handler: Function) => async (
-  req: AuthenticatedRequest,
-  res: NextApiResponse
-) => {
-  try {
-    const token = getTokenFromRequest(req);
-    if (!token) {
-      return res.status(401).json({ message: 'Authentication required' });
-    }
+type ApiHandler = (req: AuthenticatedRequest, res: NextApiResponse) => Promise<void>;
 
-    const payload = verifyToken(token);
-    const user = await User.findByPk(payload.userId);
-    
-    if (!user) {
-      return res.status(401).json({ message: 'User not found' });
-    }
+export const withAuth = (handler: ApiHandler) => {
+  return async (req: NextApiRequest, res: NextApiResponse) => {
+    try {
+      const token = getTokenFromRequest(req);
+      if (!token) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
 
-    req.user = user;
-    return handler(req, res);
-  } catch (error) {
-    console.error('Authentication error:', error);
-    return res.status(401).json({ message: 'Invalid token' });
-  }
+      const decoded = verifyToken(token);
+      if (!decoded || typeof decoded === 'string') {
+        return res.status(401).json({ error: 'Invalid token' });
+      }
+
+      const user = await User.findByPk(decoded.id);
+      if (!user) {
+        return res.status(401).json({ error: 'User not found' });
+      }
+
+      (req as AuthenticatedRequest).user = {
+        id: user.id.toString(),
+        email: user.email
+      };
+
+      return handler(req as AuthenticatedRequest, res);
+    } catch (error) {
+      console.error('Auth middleware error:', error);
+      return res.status(401).json({ error: 'Authentication failed' });
+    }
+  };
 }; 
