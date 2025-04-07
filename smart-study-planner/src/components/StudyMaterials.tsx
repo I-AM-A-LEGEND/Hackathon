@@ -15,6 +15,7 @@ interface StudyMaterialsProps {
   studyPlanId: number;
 }
 
+// Type guard for note type
 const isNoteType = (type: MaterialType): type is 'note' => {
   return type === 'note';
 };
@@ -80,7 +81,14 @@ const StudyMaterials: React.FC<StudyMaterialsProps> = ({ studyPlanId }) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value as string }));
+    
+    if (name === 'type') {
+      // Ensure type is cast to a valid MaterialType
+      const typeValue = value as MaterialType;
+      setFormData(prev => ({ ...prev, type: typeValue }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   if (loading) return <div className="text-center">Loading materials...</div>;
